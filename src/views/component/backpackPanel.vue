@@ -54,6 +54,7 @@ export default {
   data() {
     return {
       grid: [],
+      capacity:100,
       left: '',
       top: '',
       visible: false,
@@ -65,7 +66,7 @@ export default {
   },
   mixins: [assist],
   created() {
-    this.grid = new Array(32).fill({});
+    this.grid = new Array(this.capacity).fill({});
   },
   watch: {
     visible(value) {
@@ -157,7 +158,7 @@ export default {
     },
     // 整理
     neaten() {
-      var tem = new Array(32).fill({}),
+      var tem = new Array(this.capacity).fill({}),
         temIndex = 0
       this.grid.map((item, index) => {
         if (JSON.stringify(item) != '{}') {
@@ -169,7 +170,7 @@ export default {
       tem = []
     },
     clear(){
-      this.grid = new Array(32).fill({});
+      this.grid = new Array(this.capacity).fill({});
     },
     // 一键出售
     sell() {
@@ -276,8 +277,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 .backpackPanel {
-  width: 5.02rem;
-  height: 3.1rem;
+  width: 6.2rem;
+  height: 6.6rem;
   display: flex;
   flex-wrap: wrap;
   padding: 0.14rem 0.14rem 0.14rem;
