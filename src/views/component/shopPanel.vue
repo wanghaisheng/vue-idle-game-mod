@@ -1,12 +1,39 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <div class="shop">
     <div class="content">
-      <div class="grid" v-for="(v, k) in grid" :key="k">
-        <div class="title" v-if="v.lv" @contextmenu.prevent="openMenu(k, $event)" @mouseover="showItemInfo($event, v.itemType, v)" @mouseleave="closeItemInfo" @touchstart.stop.prevent="openMenu(k,$event)">
-          <div class="icon" :style="{ 'box-shadow': 'inset 0 0 7px 2px ' + v.quality.color }">
-            <img :src="v.type.iconSrc" alt="" />
+      <div class="" v-for="(v, k) in grid" :key="k">
+        <div class="" v-if="v.lv">
+          <div class="weaponPanel" v-if="JSON.stringify(v)!='{}'">
+            <div class="title">
+              <div class='icon' @contextmenu.prevent="openMenu(k, $event)" @mouseover="showItemInfo($event, v.itemType, v)" @mouseleave="closeItemInfo" @touchstart.stop.prevent="openMenu(k,$event)" :style="{'box-shadow':'inset 0 0 7px 2px '+v.quality.color}">
+                <img :src="v.type.iconSrc" alt="">
+              </div>
+              <div style="display: flex;flex-direction: column;justify-content:space-around;margin-left: 0.06rem;">
+              <div :style="{color:v.quality.color}">{{v.type.name}} {{v.enchantlvl?'(+'+v.enchantlvl+')':''}}</div>
+              <div :style="{'font-size':(parseInt(v.gold)>99999?0.14:0.16)+'rem'}">{{v.gold}}金币</div>
+              </div>
+              <div class="button" @click="buyTheEquipmentEX(k)">购买</div>
+            </div>
+            <div class='type'>
+              <div :style="{color:v.quality.color}">{{v.quality.name}}</div>
+              <div>lv{{v.lv}}</div>
+            </div>
+            <div class="entry">
+              <div v-for="w in v.type.entry" :key="w.id">
+                <div>{{w.name}}:{{w.showVal}} <span style="color:#68d5ed" v-if="v.enchantlvl">(+{{Math.round(w.value*(1.05**(v.enchantlvl)**1.1)-w.value)}})</span><span style="float:right">{{w.strength}}</span></div>
+              </div>
+            </div>
+            <div class="extraEntry">
+              <div v-for="w in v.extraEntry" :key="w.id">
+                <div>{{w.name}}:{{w.showVal}}{{plusValue(w)}}<span style="float:right">{{w.strength}}</span></div>
+              </div>
+            </div>
+            <div class="des">
+              <div>
+                {{v.type.des}}
+              </div>
+            </div>
           </div>
-          <span class="info" :style="{'font-size':(parseInt(v.gold)>99999?0.18:0.22)+'rem'}">{{v.gold}}</span>
         </div>
       </div>
     </div>
@@ -15,6 +42,26 @@
       <div class="info">
         <span v-show="timeStart" class="timeStart">下次刷新次数获取：{{timeo}}s</span>
         <span>剩余刷新次数：{{refreshTime}}次。</span>
+      </div>
+      <div style="display: flex;align-items: center;margin: auto">
+        <div style="display: flex;align-items: center;">
+          <input type="checkbox" name="" v-model="autoBuy"/>
+          <div style="margin-left: 0.1rem;">自动刷新<br/>
+            购买独特</div>
+        </div>
+        <div style="margin-left: 0.3rem;">
+          最低等级<input type="number" placeholder="100" v-model="autoBuyLevel" min="1" style="width: 0.7rem;margin-left: 0.1rem;"/>
+        </div>
+        <div style="display: flex;align-items: center;margin-left: 0.3rem;">
+          <div>基础属性<br/>
+            最低百分比</div>
+          <input type="number" placeholder="100" v-model="autoBuyStrength" max="100" min="0" style="margin-left: 0.1rem;"/>%
+        </div>
+        <div style="display: flex;align-items: center;margin-left: 0.3rem;">
+          <div>持有金币<br/>
+            为价格倍数</div>
+          <input type="number" placeholder="100" v-model="autoBuyPriceTimes" min="0" style="width: 0.7rem;margin-left: 0.1rem;"/>
+        </div>
       </div>
 
       <div class="button" @click="goldRefreshShopItems()">10000金币刷新</div>
@@ -40,12 +87,17 @@ export default {
       currentItem: {},
       currentItemIndex: "",
       refreshTime: 5,
+      //timeo: 10,
       timeo: 60,
       timeStart: false,
       timeInterval: '',
       isTouch: false,
       tipsFlag: false,
       tipsFlagComfirm: false,
+      autoBuy:false,
+      autoBuyLevel:100,
+      autoBuyStrength:70,
+      autoBuyPriceTimes:20
     };
   },
   mixins: [assist],
@@ -78,11 +130,43 @@ export default {
         this.timeStart = false
         this.timeo = 5
         clearInterval(this.timeInterval)
+        if(this.autoBuy){
+          this.refreshShopItems(true);
+        }
+      }
+    },
+    autoBuy(value){
+      if(value==true&&this.refreshTime==5){
+        this.autoBuyItems();
+        this.refreshShopItems(true);
       }
     }
   },
   mounted() {
     this.refreshShopItems(true);
+  },
+  computed:{
+    plusValue(){
+      return function (v){
+        let attribute = this.$store.state.playerAttribute.attribute;
+        let output = 0;
+        switch (v.type){
+          case "ATKPERCENT":
+            output = parseInt(attribute.ATK.info[1] * v.value / 100);
+            break;
+          case "DEFPERCENT":
+            output = parseInt(attribute.DEF.info[1] * v.value / 100);
+            break;
+          case "HPPERCENT":
+            output = parseInt(attribute.MAXHP.info[1] * v.value / 100);
+            break;
+          case "BLOCPERCENT":
+            output = parseInt(attribute.BLOC.info[1] * v.value / 100);
+            break;
+        }
+        return output>0?"(+"+output+")":"";
+      };
+    }
   },
   methods: {
     /**
@@ -136,6 +220,9 @@ export default {
         // lv = lv > 200 ? 200 : lv
         this.createShopItem(lv);
       }
+      if(this.autoBuy){
+        this.autoBuyItems();
+      }
     },
     /**
      * 金币刷新商店
@@ -185,6 +272,7 @@ export default {
       }
     },
     createShopItem(lv) {
+      //var equip = [0.4, 0.4, 0.1, 0.1];
       var equip = [0.4, 0.342, 0.25, 0.008];
       // var equip = [0.4, 0.30, 0.25, 0.05];
       // var equip = [0, 0, 0,1];
@@ -301,13 +389,39 @@ export default {
         this.$set(this.grid, this.currentItemIndex, {});
       }
     },
+    buyTheEquipmentEX(k){
+      this.currentItemIndex = k;
+      this.currentItem = this.grid[k];
+      this.buyTheEquipment();
+    },
+    autoBuyItems(){
+      this.grid.forEach(function(item, index){
+        if(item.quality && item.quality.name == '独特' && item.lv>=this.autoBuyLevel && item.gold<=this.$store.state.playerAttribute.GOLD/this.autoBuyPriceTimes){
+          for(let i=0;i<item.type.entry.length;i++){
+            if(item.type.entry[i].strength.replace("%","")*100<this.autoBuyStrength){
+              return;
+            }
+          }
+          this.buyTheEquipmentEX(index);
+          let items = [];
+          items.push(item);
+          this.$store.commit("set_sys_info", {
+            msg: `
+              消费金币${parseInt(item.gold)}自动购买了
+            `,
+            type: 'trophy',
+            equip: items
+          });
+        }
+        //console.log(index+"垃圾"+(item.quality.name == '独特') +" "+ (item.lv>=this.autoBuyLevel) +" "+ (item.gold<=this.$store.state.playerAttribute.GOLD/this.autoBuyPriceTimes));
+      },this);
+    }
   },
 };
 </script>
 <style lang="scss" scoped>
 .shop {
-  width: 5.02rem;
-  height: 3.1rem;
+  width: 12rem;
   display: flex;
   flex-wrap: wrap;
   padding: 0.14rem 0.14rem 0.14rem;
@@ -326,16 +440,16 @@ export default {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    flex: 1;
     margin-left: 0.2rem;
   }
 }
 .content {
   width: 100%;
-  height: 2rem;
   display: flex;
-  align-items: center;
+  padding-bottom: 0.14rem;
+  align-items: flex-start;
   justify-content: space-around;
+  border-bottom: 1px solid #ccc;
 }
 .grid {
   width: 0.6rem;
@@ -390,6 +504,64 @@ export default {
     &:hover {
       color: #ccc;
     }
+  }
+}
+.weaponPanel {
+  color: #f1f1f1;
+  width: 2.1rem;
+  height: auto;
+  box-sizing: border-box;
+  .title {
+    display: flex;
+    padding-bottom: 0.1rem;
+    border-bottom: 1px solid #777;
+    .icon {
+      width: 0.5rem;
+      height: 0.5rem;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.04rem;
+    }
+    .button{
+      padding:0.03rem 0.06rem;
+      height:fit-content;
+      margin-left: auto;
+      align-self:center;
+    }
+  }
+  .type {
+    padding: 0.1rem;
+    display: flex;
+    width: 100%;
+    align-content: center;
+    justify-content: space-between;
+  }
+  .entry {
+    width: 100%;
+    padding-bottom: 0.1rem;
+    border-bottom: 1px solid #777;
+    div {
+      text-align: left;
+    }
+  }
+  .extraEntry {
+    width: 100%;
+    margin-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    color: #68d5ed;
+    border-bottom: 1px solid #777;
+    div {
+      text-align: left;
+    }
+  }
+  .des{
+    color: #777;
+    font-size: 0.12rem;
+    margin-top: 0.1rem;
+    text-align: left;
+    text-indent: 0.24rem;
   }
 }
 </style>
