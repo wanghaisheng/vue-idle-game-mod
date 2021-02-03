@@ -74,6 +74,21 @@ export default {
           desc: '- 这里保留了历史版本，你仍然可以导入存档到旧版本游玩,测试服版本不保证可玩性',
         },
         {
+          title: '2021-2-4 (1.3.3 mod v1)',
+          adjust: [
+            '- 血量恢复后自动重新挑战地下城功能',
+            '- 自动刷新和购买商店装备',
+            '- 背包容量提升到100，除此之外未对原版参数进行任何修改',
+            '- 地下城及其怪物强度、生命、攻击力显示，计算能否胜利和恢复时长',
+            '- 装备属性强度显示',
+            '- 属性面板计算公式显示',
+            '- 商店装备属性直接显示',
+            '- 强化界面估算自动强化到目标等级的消耗显示',
+            '- 存档保存背包自动出售的设置',
+            '- 微调部分界面',
+          ]
+        },
+        {
           title: '2021-1-15 (1.3.3)',
           adjust: [
             '- 略微调高了强化带来的的基础属性加成',
@@ -246,7 +261,8 @@ export default {
       this.showExtrasInfo = false
     },
     navToGithub() {
-      window.open('https://github.com/Couy69/vue-idle-game', '_blank');
+      //window.open('https://github.com/Couy69/vue-idle-game', '_blank');
+      window.open('https://github.com/XiaofengdiZhu/vue-idle-game-mod', '_blank');
     },
     async submitSuggest() {
       if (this.disabled) {
@@ -254,7 +270,7 @@ export default {
       }
       try {
         let data = await this.$api.post(
-          "v1/Suggest/add",
+          "http://couy.xyz/v1/Suggest/add",
           {
             name: this.name,
             suggest: this.suggest,
