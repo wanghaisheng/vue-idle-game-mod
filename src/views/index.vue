@@ -31,6 +31,7 @@
         <template v-slot:tip>
           <p class="info">* 当前生命值/最大生命值</p>
           <p class="info">* 每秒会回复2%的最大生命值</p>
+          <p class="info">最大生命值=200+({{attribute.MAXHP.info[1]}}+{{attribute.MAXHP.info[0]}})*{{100+attribute.MAXHP.info[2]}}%</p>
         </template>
 
       </cTooltip>
@@ -55,6 +56,7 @@
           </template>
           <template v-slot:tip>
             <p class="info">* 角色攻击力</p>
+            <p class="info">=({{attribute.ATK.info[1]}}+{{attribute.ATK.info[0]}})*{{100+attribute.ATK.info[2]}}%</p>
           </template>
         </cTooltip>
 
@@ -69,6 +71,7 @@
           </template>
           <template v-slot:tip>
             <p class="info">* 角色当前的暴击率</p>
+            <p class="info">=({{attribute.CRIT.info[1]}}+{{attribute.CRIT.info[0]}})%</p>
           </template>
         </cTooltip>
 
@@ -83,6 +86,7 @@
           </template>
           <template v-slot:tip>
             <p class="info">* 暴击伤害初始为150%</p>
+            <p class="info">=150%+({{attribute.CRITDMG.info[1]}}+{{attribute.CRITDMG.info[0]}})%</p>
           </template>
         </cTooltip>
 
@@ -97,8 +101,12 @@
           </template>
           <template v-slot:tip>
             <p class="info">* 角色防御力以及计算后的减伤比例</p>
-            <p class="info">* 减伤比例采用非线性计算，护甲越高收益越低</p>
-            <p class="info">* 显示为近似值，实际上永远不会到达100%减伤</p>
+            <p class="info">* 减伤比例采用反比例函数计算，护甲越高收益越低</p>
+            <p class="info">* 显示为近似值，最高减伤95.238%</p>
+            <p class="info">* 减伤=20*防御力/(21*防御力+400)</p>
+            <p class="info">* 400*减伤/(20-21*减伤)=防御力</p>
+            <p class="info">防御力=({{attribute.DEF.info[1]}}+{{attribute.DEF.info[0]}})*{{100+attribute.DEF.info[2]}}%</p>
+            <p class="info">要再降低20%受到伤害，需提高防御力至{{(400*(1-attribute.REDUCDMG*0.8)/(20-21*(1-attribute.REDUCDMG*0.8))).toFixed(0)}}</p>
           </template>
         </cTooltip>
 
@@ -130,6 +138,7 @@
           <template v-slot:tip>
             <p class="info">* 角色格挡伤害</p>
             <p class="info">* 计算护甲后再计算格挡伤害就是最终受到的伤害</p>
+            <p class="info">=({{attribute.BLOC.info[1]}}+{{attribute.BLOC.info[0]}})*{{100+attribute.BLOC.info[2]}}%</p>
           </template>
         </cTooltip>
 
@@ -146,6 +155,10 @@
           <template v-slot:tip>
             <p class="info">* DPS:角色每秒伤害</p>
             <p class="info">* 这个只是伤害数据，并没有统计防御属性，所以只是作为战斗力评估的一个依据</p>
+            <p class="info">=(1+暴击率*(暴击伤害-100%)*攻击力<br />
+              =(1+{{attribute.CRIT.value>100?100:attribute.CRIT.value}}%*({{attribute.CRITDMG.value}}%-100%)*{{attribute.ATK.value}}<br />
+              ={{ 100+(attribute.CRIT.value>100?1:attribute.CRIT.value/100)*(attribute.CRITDMG.value-100)}}%*{{attribute.ATK.value}}
+            </p>
           </template>
         </cTooltip>
         <cTooltip placement="bottom">
