@@ -813,6 +813,10 @@ export default {
         this,
         "backpackPanel",
       );
+      var shopPanel = this.findComponentDownward(
+          this,
+          "shop",
+      );
       data = {
         playerEquipment: {
           playerWeapon: this.$store.state.playerAttribute.weapon,
@@ -821,6 +825,7 @@ export default {
           playerNeck: this.$store.state.playerAttribute.neck,
         },
         backpackEquipment: backpackPanel.grid,
+        backpackAutoSell: backpackPanel.autoSell,
         lv: this.$store.state.playerAttribute.lv,
         gold: this.$store.state.playerAttribute.GOLD,
         endlessLv: this.$store.state.playerAttribute.endlessLv,
@@ -828,6 +833,11 @@ export default {
         r: {
           count: this.$store.state.reincarnation.count,
           point: this.$store.state.reincarnation.point,
+        },
+        autoBuyAttributes:{
+          autoBuyLevel:shopPanel.autoBuyLevel,
+          autoBuyStrength:shopPanel.autoBuyStrength,
+          autoBuyPriceTimes:shopPanel.autoBuyPriceTimes
         }
       }
       var saveData = Base64.encode(Base64.encode(JSON.stringify(data)))
@@ -871,8 +881,20 @@ export default {
             this,
             "backpackPanel",
           );
+          var shopPanel = this.findComponentDownward(
+              this,
+              "shop",
+          );
           if (JSON.stringify(this.saveData) != '{}') {
             backpackPanel.grid = this.saveData.backpackEquipment
+            if(this.saveData.backpackAutoSell!=undefined) {
+              backpackPanel.autoSell = this.saveData.backpackAutoSell;
+            }
+            if(this.saveData.autoBuyAttributes!=undefined){
+              shopPanel.autoBuyLevel=this.saveData.autoBuyAttributes.autoBuyLevel;
+              shopPanel.autoBuyStrength=this.saveData.autoBuyAttributes.autoBuyStrength;
+              shopPanel.autoBuyPriceTimes=this.saveData.autoBuyAttributes.autoBuyPriceTimes;
+            }
           }
           if (!this.saveData.playerEquipment.playerNeck) {
             this.saveData.playerEquipment.playerNeck = {
